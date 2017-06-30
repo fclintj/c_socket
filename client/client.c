@@ -15,8 +15,7 @@
 
 struct tcp_client {
     const char *address, *port;
-    int sockfd, numbytes;  
-    char buf[MAXSIZE];
+    int sockfd;  
     struct addrinfo hints, *servinfo;
     int rv;
     char s[INET6_ADDRSTRLEN];
@@ -25,20 +24,28 @@ struct tcp_client {
 void *get_in_addr(struct sockaddr *sa);
 void init_client(struct tcp_client *client);
 void check_argv(int argc, char *argv[], struct tcp_client *client);
+void recv_all(struct tcp_client *client, char *buf);
 
 int main(int argc, char *argv[]) {
     struct tcp_client client;
     check_argv(argc, argv, &client);
     init_client(&client);
+    
+    /* char message[4048] = "What is your status?"; */
+    /* int len = strlen(message); */
 
-    while(client.numbytes != 0){ 
-        if ((client.numbytes = recv(client.sockfd, client.buf, MAXSIZE-1, 0)) == -1) {
+    /* send(client.sockfd, message, len, 0); */ 
+    int numbytes = 1;
+    char buf[MAXSIZE];
+    /* int numbytes = recv(client.sockfd, buf, MAXSIZE-1, 0); */
+    /* printf("%d\n",numbytes); */    
+    while(numbytes != 0){ 
+        if ((numbytes = recv(client.sockfd, buf, MAXSIZE-1, 0)) == -1) {
             perror("recd");
             exit(1);
         }
-
-    printf("%.*s",client.numbytes, client.buf);
     }
+        printf("%d\n",numbytes); 
     close(client.sockfd);
 
     return 0;
@@ -99,4 +106,16 @@ void *get_in_addr(struct sockaddr *sa) {
     }
 
     return &(((struct sockaddr_in6*)sa)->sin6_addr);
+}
+
+void recv_all(struct tcp_client *client, char *buf){
+    int numbytes = 1;    
+    while(numbytes != 0){ 
+        if ((numbytes = recv(client->sockfd, buf, MAXSIZE-1, 0)) == -1) {
+            perror("recd");
+            exit(1);
+        }
+        printf("%d\n",numbytes); 
+    }
+    printf("end\n");
 }
