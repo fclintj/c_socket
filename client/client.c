@@ -11,7 +11,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 
-#define MAXSIZE 4096  
+#define BUFFSIZE 4096  
 
 struct tcp_client {
     const char *address, *port;
@@ -24,19 +24,19 @@ struct tcp_client {
 void *get_in_addr(struct sockaddr *sa);
 void init_client(struct tcp_client *client);
 void check_argv(int argc, char *argv[], struct tcp_client *client);
-void recv_all(struct tcp_client *client, char *buf);
 void recv_msg(int sockfd, char *buf);
+void send_msg(int sockfd, char *buf);
 
 int main(int argc, char *argv[]) {
     struct tcp_client client;
     check_argv(argc, argv, &client);
     init_client(&client);
     
-    char recv_buff[MAXSIZE];
-    /* int numbytes = recv(client.sockfd, buf, MAXSIZE-1, 0); */
-    /* printf("%d\n",numbytes); */    
+    char recv_buff[BUFFSIZE];
     recv_msg(client.sockfd, recv_buff);
-    
+    printf("%s\n",recv_buff); 
+    printf("Accepted\n");
+    recv_msg(client.sockfd, recv_buff); 
     printf("%s\n",recv_buff); 
     close(client.sockfd);
     return 0;
@@ -99,23 +99,19 @@ void *get_in_addr(struct sockaddr *sa) {
     return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
 
-void recv_all(struct tcp_client *client, char *buf){
-    int numbytes = 1;    
-    while(numbytes != 0){ 
-        if ((numbytes = recv(client->sockfd, buf, MAXSIZE-1, 0)) == -1) {
-            perror("recd");
-            exit(1);
-        }
-        printf("%d\n",numbytes); 
-    }
-    printf("end\n");
-}
 
 void recv_msg(int sockfd, char *buf){
     int numbytes;
-        if ((numbytes = recv(sockfd, buf, MAXSIZE-1, 0)) == 0) {
+        if ((numbytes = recv(sockfd, buf, BUFFSIZE-1, 0)) == 0) {
             perror("recd");
             exit(1);
         }
     buf[numbytes]='\0';
+}
+
+void send_msg(int sockfd, char *message){
+    int len = strlen(message);
+    int x = strlen(message);
+    printf("%d",x);
+    send(sockfd, message, len, 0); 
 }

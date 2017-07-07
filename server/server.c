@@ -13,7 +13,7 @@
 #include <signal.h>
 
 #define BACKLOG 10                      // incoming connections in queue
-#define SIZE_BUFFER 4096
+#define BUFFSIZE 4096
 
 struct tcp_server {
     char *port; 
@@ -33,15 +33,15 @@ void *get_in_addr(struct sockaddr *sa);
 void init_server(struct tcp_server *server);  
 void check_argv(int argc, char *argv[], struct tcp_server *server);
 void send_msg(int sockfd, char *buf);
+void recv_msg(int sockfd, char *buf);
 
 int main(int argc, char *argv[]) {
     struct tcp_server server;
     check_argv(argc, argv, &server);
     init_server(&server);  
 
-    char send_buff[SIZE_BUFFER] = "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.id est laborum. !!!";
-    int x = strlen(send_buff);
-    printf("%d",x);
+    char send_buff[BUFFSIZE] = "test";
+
     while(1) {
         if(connect_to_client(&server) == -1)
             continue;
@@ -185,3 +185,14 @@ void send_msg(int sockfd, char *message){
     printf("%d",x);
     send(sockfd, message, len, 0); 
 }
+
+void recv_msg(int sockfd, char *buf){
+    int numbytes;
+        if ((numbytes = recv(sockfd, buf, BUFFSIZE-1, 0)) == 0) {
+            perror("recd");
+            exit(1);
+        }
+    buf[numbytes]='\0';
+}
+
+
