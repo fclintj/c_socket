@@ -11,7 +11,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 
-#define MAXSIZE 1024  
+#define MAXSIZE 4096  
 
 struct tcp_client {
     const char *address, *port;
@@ -25,29 +25,20 @@ void *get_in_addr(struct sockaddr *sa);
 void init_client(struct tcp_client *client);
 void check_argv(int argc, char *argv[], struct tcp_client *client);
 void recv_all(struct tcp_client *client, char *buf);
+void recv_msg(int sockfd, char *buf);
 
 int main(int argc, char *argv[]) {
     struct tcp_client client;
     check_argv(argc, argv, &client);
     init_client(&client);
     
-    /* char message[4048] = "What is your status?"; */
-    /* int len = strlen(message); */
-
-    /* send(client.sockfd, message, len, 0); */ 
-    int numbytes = 1;
-    char buf[MAXSIZE];
+    char recv_buff[MAXSIZE];
     /* int numbytes = recv(client.sockfd, buf, MAXSIZE-1, 0); */
     /* printf("%d\n",numbytes); */    
-    while(numbytes != 0){ 
-        if ((numbytes = recv(client.sockfd, buf, MAXSIZE-1, 0)) == -1) {
-            perror("recd");
-            exit(1);
-        }
-    }
-        printf("%d\n",numbytes); 
+    recv_msg(client.sockfd, recv_buff);
+    
+    printf("%s\n",recv_buff); 
     close(client.sockfd);
-
     return 0;
 }
 
@@ -118,4 +109,13 @@ void recv_all(struct tcp_client *client, char *buf){
         printf("%d\n",numbytes); 
     }
     printf("end\n");
+}
+
+void recv_msg(int sockfd, char *buf){
+    int numbytes;
+        if ((numbytes = recv(sockfd, buf, MAXSIZE-1, 0)) == 0) {
+            perror("recd");
+            exit(1);
+        }
+    buf[numbytes]='\0';
 }

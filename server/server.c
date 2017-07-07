@@ -13,6 +13,7 @@
 #include <signal.h>
 
 #define BACKLOG 10                      // incoming connections in queue
+#define SIZE_BUFFER 4096
 
 struct tcp_server {
     char *port; 
@@ -25,18 +26,22 @@ struct tcp_server {
     int addr_err;
 };
 
-int send_all(int s, char *buf, int *len);
+int send_long(int s, char *buf);
 int connect_to_client(struct tcp_server *server);
 void sigchld_handler(int s);
 void *get_in_addr(struct sockaddr *sa);
 void init_server(struct tcp_server *server);  
 void check_argv(int argc, char *argv[], struct tcp_server *server);
+void send_msg(int sockfd, char *buf);
 
 int main(int argc, char *argv[]) {
     struct tcp_server server;
     check_argv(argc, argv, &server);
     init_server(&server);  
 
+    char send_buff[SIZE_BUFFER] = "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.id est laborum. !!!";
+    int x = strlen(send_buff);
+    printf("%d",x);
     while(1) {
         if(connect_to_client(&server) == -1)
             continue;
@@ -44,14 +49,8 @@ int main(int argc, char *argv[]) {
         if (!fork()) { 
             close(server.sockfd); // socket file descriptor not needed
 
-            char x[4048] = "cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. !!! ";
+            send_long(server.new_fd, send_buff);
 
-            int len = strlen(x);
-            send_all(server.new_fd, x, &len); 
-            int y = 7; 
-            sprintf(x,"%d", y); 
-            len = 1;
-            send(server.new_fd, x, len, 0);
             close(server.new_fd);
             exit(0);
         }
@@ -61,19 +60,20 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
-int send_all(int s, char *buf, int *len) {
+int send_long(int s, char *buf) {
+    int len = strlen(buf);
     int total = 0;        // bytes sent
-    int bytesleft = *len; // bytes to send
+    int bytesleft = len; // bytes to send
     int n;
 
-    while(total < *len) {
+    while(total < len) {
         n = send(s, buf+total, bytesleft, 0);
         if (n == -1) { break; }
         total += n;
         bytesleft -= n;
     }
 
-    *len = total; // return number actually sent here
+    len = total; // return number actually sent here
 
     return (n == -1 ? -1 : 0); // return -1 on failure, 0 on success
 } 
@@ -172,9 +172,16 @@ int connect_to_client(struct tcp_server *server) {
 }
 
 void check_argv(int argc, char *argv[], struct tcp_server *server) {
-    if (argc != 3) {
+    if (argc != 2) {
         fprintf(stderr,"usage: client hostname/port\n");
         exit(1);
     }
     server->port = argv[1];
+}
+
+void send_msg(int sockfd, char *message){
+    int len = strlen(message);
+    int x = strlen(message);
+    printf("%d",x);
+    send(sockfd, message, len, 0); 
 }
